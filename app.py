@@ -6,8 +6,6 @@ except ImportError:
             def decorator(fn):
                 return fn
             return decorator
-        # Actually HF Spaces might just need the function wrapper directly
-        # Let's make it simpler
     class DummySpaces:
         def GPU(self, fn=None, **kwargs):
             if fn is None:
@@ -20,7 +18,6 @@ import gradio as gr
 import pandas as pd
 from api.model_utils import load_models, predict_pipeline
 
-# Load models once at startup
 print("Initializing models for Gradio...")
 load_models()
 
@@ -41,27 +38,26 @@ def analyze_csv(file):
         df = pd.read_csv(file.name)
         if "review" not in df.columns:
             return "Error: CSV must contain a 'review' column.", None
-            
+
         sentiments = []
         aspects_list = []
-        
+
         for text in df["review"]:
             res = predict_pipeline(str(text))
             sentiments.append(res["sentiment"])
             aspects_list.append(", ".join(res["aspects"]))
-            
+
         df["Predicted Sentiment"] = sentiments
         df["Predicted Aspects"] = aspects_list
-        
+
         return "Processing Complete!", df
     except Exception as e:
         return f"Error: {e}", None
 
-# --- Gradio Interface ---
 with gr.Blocks(title="E-Commerce AI Dashboard") as demo:
     gr.Markdown("# 🛍️ E-Commerce Review Categorizer (IndoBERT)")
     gr.Markdown("Analyze customer reviews in real-time. Hosted for free on Hugging Face Spaces!")
-    
+
     with gr.Tab("Single Text Tester"):
         with gr.Row():
             text_input = gr.Textbox(lines=4, label="Type a review here", value="Bagus, namun ternyata tidak bagus")
@@ -71,13 +67,13 @@ with gr.Blocks(title="E-Commerce AI Dashboard") as demo:
             out_sentiment = gr.Textbox(label="Sentiment")
             out_confidence = gr.Textbox(label="Confidence")
             out_aspects = gr.Textbox(label="Aspects Detected")
-            
+
         analyze_btn.click(
             fn=analyze_single_text,
             inputs=text_input,
             outputs=[out_sentiment, out_confidence, out_aspects]
         )
-        
+
     with gr.Tab("Batch CSV Upload"):
         with gr.Row():
             file_input = gr.File(label="Upload CSV with a 'review' column", file_types=[".csv"])
@@ -87,13 +83,12 @@ with gr.Blocks(title="E-Commerce AI Dashboard") as demo:
             csv_status = gr.Textbox(label="Status")
         with gr.Row():
             csv_output = gr.Dataframe(label="Results")
-            
+
         csv_btn.click(
             fn=analyze_csv,
             inputs=file_input,
             outputs=[csv_status, csv_output]
         )
 
-# Launch for Hugging Face
 if __name__ == "__main__":
     demo.launch()

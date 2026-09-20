@@ -1,3 +1,21 @@
+try:
+    import spaces
+except ImportError:
+    class DummySpaces:
+        def GPU(self):
+            def decorator(fn):
+                return fn
+            return decorator
+        # Actually HF Spaces might just need the function wrapper directly
+        # Let's make it simpler
+    class DummySpaces:
+        def GPU(self, fn=None, **kwargs):
+            if fn is None:
+                def wrapper(f): return f
+                return wrapper
+            return fn
+    spaces = DummySpaces()
+
 import gradio as gr
 import pandas as pd
 from api.model_utils import load_models, predict_pipeline
@@ -6,6 +24,7 @@ from api.model_utils import load_models, predict_pipeline
 print("Initializing models for Gradio...")
 load_models()
 
+@spaces.GPU
 def analyze_single_text(text):
     if not text.strip():
         return "Please enter some text.", "", ""

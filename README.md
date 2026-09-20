@@ -1,42 +1,41 @@
-# 🛍️ End-to-End Local E-Commerce Review Categorizer
+# End-to-End Local E-Commerce Review Categorizer
 
 ## Business Problem & Impact
 Local e-commerce businesses often receive hundreds of reviews across various platforms. Manually reading and categorizing these reviews to find specific actionable complaints (e.g., "was the packaging bad?", "was the courier slow?", "is the product defective?") is incredibly time-consuming. 
 
 This project solves that problem by providing an automated Machine Learning pipeline tailored specifically for **Indonesian text and e-commerce slang**. It automatically predicts the Sentiment (Positive/Negative) and categorizes the exact Aspect of the complaint (Shipping, Product Quality, Customer Service, Packaging), allowing customer service teams to immediately triage high-priority negative reviews.
 
-## 🏗️ Architecture Flowchart
+## Architecture Flowchart
 
 ```mermaid
 flowchart TD
     A[Scraper / Raw Data] -->|reviews_raw.csv| B(Phase 2: Preprocessing)
-    B -->|Slang Normalization & Labeling| C{Phase 3: TF-IDF + Logistic Regression}
-    C -->|Export .joblib Models| D[Phase 4: FastAPI Backend]
-    D -->|REST API /predict| E((Phase 5: Streamlit Dashboard))
-    E -->|Visual Analytics & Alerts| F[Customer Service Team]
+    B -->|Slang Normalization & Labeling| C{Phase 3: IndoBERT + TF-IDF}
+    C -->|Export Models to models/| D[Phase 4: Gradio Application]
+    D -->|Hugging Face Spaces| E((Live Web Dashboard))
 ```
 
-## 🚀 Live Interactive Demo
-*(When deployed to Hugging Face Spaces or Streamlit Cloud, insert your live URL here: `https://huggingface.co/spaces/your-username/ecommerce-reviews`)*
+## Live Interactive Demo
+**Try the Live App Here:** [https://huggingface.co/spaces/Juleohermanto/customer-sentiment-training](https://huggingface.co/spaces/Juleohermanto/customer-sentiment-training)
 
-## 📂 Project Structure
+## Project Structure
 ```text
 ├── data/
 │   ├── raw/reviews_raw.csv                 # Generated/Scraped raw reviews
 │   └── processed/reviews_cleaned.csv       # Cleaned, labeled, and slang-normalized
-├── models/                                 # Serialized ML artifacts (.joblib)
+├── models/                                 # Serialized ML artifacts and IndoBERT Weights
 ├── notebooks/
-│   ├── 01_scraping.py                      # Playwright scraper / Synthetic data generator
+│   ├── 01_scraping.py                      # Synthetic data generator
 │   ├── 02_eda_and_preprocessing.py         # Text cleaning and splitting
-│   └── 03_model_training.py                # Scikit-Learn TF-IDF and Model Training
+│   ├── 03_model_training.py                # Scikit-Learn TF-IDF (Aspect Training)
+│   └── 04_indobert_training.py             # Hugging Face IndoBERT (Sentiment Training)
+├── app.py                                  # Gradio Interactive Dashboard (Monolith)
 ├── app/
-│   ├── main.py                             # FastAPI server
 │   └── model_utils.py                      # Model loading and inference pipeline
-├── streamlit_app.py                        # Streamlit Interactive Dashboard
 └── requirements.txt                        # Project dependencies
 ```
 
-## ⚙️ How to Run Locally
+## How to Run Locally
 
 ### 1. Setup Environment
 Ensure you have Python 3.9+ installed.
@@ -45,23 +44,16 @@ pip install -r requirements.txt
 ```
 
 ### 2. Generate Data & Train Models
-Run the notebooks/scripts in order:
+*(Note: IndoBERT training requires a GPU, preferably Google Colab)*
 ```bash
 python notebooks/01_scraping.py
 python notebooks/02_eda_and_preprocessing.py
 python notebooks/03_model_training.py
 ```
 
-### 3. Start the FastAPI Backend
-In a new terminal window, start the inference server:
+### 3. Launch the Gradio Dashboard
+Because we combined the frontend and backend into a single application for Hugging Face compatibility, you only need to run one command!
 ```bash
-uvicorn app.main:app --reload
+python app.py
 ```
-Check the API documentation at `http://127.0.0.1:8000/docs`
-
-### 4. Launch the Streamlit Dashboard
-In another terminal window, launch the UI:
-```bash
-streamlit run streamlit_app.py
-```
-This will open the beautiful dashboard in your browser!
+This will start the local server. Open your browser and go to `http://127.0.0.1:7860` to see the dashboard!

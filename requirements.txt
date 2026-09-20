@@ -18,3 +18,5 @@ uvicorn
 pydantic
 streamlit
 joblib
+
+gradio

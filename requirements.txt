@@ -1,0 +1,20 @@
+# Data scraping
+beautifulsoup4
+playwright
+pandas
+
+# NLP & Machine Learning
+scikit-learn
+Sastrawi
+xgboost
+
+# Hugging Face (Optional Transformer)
+transformers
+torch
+
+# API & Dashboard
+fastapi
+uvicorn
+pydantic
+streamlit
+joblib
